@@ -1,75 +1,21 @@
-# import packages
-import irsdk
 from pygame import *
-import winsound
+from UpshiftTone import beep
 
-fname = "UpshiftTone\Beep.wav"  # path to beep soundfile
+class UpshiftToneClass(object):
+    def __init__(self, ir):
+        self.ir = ir
+        #self.fname = fname
+        print(self.ir)
 
-def irUpshiftSound():
+    def iRUpshiftTone(self, ShiftRPM):
 
-    ir = irsdk.IRSDK()  # initialize iRacing SDK
+        print('function called')
 
-    wasRunning = 0  # flag to check if iRacing was running
+        while self.ir['IsOnTrack']:
+            RPM = self.ir['RPM']
+            Gear = self.ir['Gear']
 
-    print('Waiting for iRacing...')  # initialisation message
-    winsound.PlaySound(fname, winsound.SND_FILENAME)
-
-    # shut down programme if iRacing is not found within one minute
-    # while not ir.startup():
-    #     time.wait(60000)
-    #     print('iRacing not detected. Shutting down...')
-    #     break
-
-    while 1:
-        # initialisaiton if iRacing is detected
-        if ir.startup() and wasRunning == 0:
-            wasRunning = 1
-            print('iRacing detected! :-)')
-
-            # play three beep sounds as notification
-            winsound.PlaySound(fname, winsound.SND_FILENAME)
-            time.wait(300)
-            winsound.PlaySound(fname, winsound.SND_FILENAME)
-            time.wait(300)
-            winsound.PlaySound(fname, winsound.SND_FILENAME)
-
-            # get optimal shift RPM from iRacing and display message
-            ShiftRPM = ir['DriverInfo']['DriverCarSLShiftRPM']
-
-            DriverCarIndex = ir['DriverInfo']['DriverCarIdx']
-            DriverCarName = ir['DriverInfo']['Drivers'][DriverCarIndex]['CarScreenNameShort']
-
-            # ir['DriverInfo']['Drivers'][ir['DriverInfo']['DriverCarIdx']]['CarScreenNameShort']
-            print('Optimal Shift RPM for', DriverCarName,':', ShiftRPM)
-
-            IsOnTrack = False  # flag to check if car has been on track in this session
-
-        # execute this loop while iRacing is running
-        while ir.startup():
-            # two beeps sounds as notification when entering track
-            if ir['IsOnTrack'] and not IsOnTrack:
-                IsOnTrack = True
-                winsound.PlaySound(fname, winsound.SND_FILENAME)
-                time.wait(300)
-                winsound.PlaySound(fname, winsound.SND_FILENAME)
-
-            # execute this loop while player is on track
-            while ir['IsOnTrack']:
-                # get currenct vehicle data from iRacing
-                RPM = ir['RPM']
-                Gear = ir['Gear']
-
-                #	check if upshift RPM is reached
-                if Gear > 0 and RPM >= ShiftRPM:  # disable sound for neutral and reverse gear
-                    winsound.PlaySound(fname, winsound.SND_FILENAME)
-                    time.wait(750)  # pause for 750 ms to avoid multiple beeps when missing shiftpoint
-
-            # update flag when leaving track
-            if not ir['IsOnTrack'] and IsOnTrack:
-                IsOnTrack = False
-
-        # shut down programme when iRacing terminates
-        if wasRunning == 1 and ir.startup() == False:
-            wasRunning = 0
-            #print('iRacing terminated. Shutting down...')
-            #break
+            #	check if upshift RPM is reached
+            if Gear > 0 and RPM >= ShiftRPM:  # disable sound for neutral and reverse gear
+                beep.beep(1, 1000)
+                time.wait(1000)
